@@ -1,4 +1,0 @@
-miTranslator
-============
-
-Details coming soon...

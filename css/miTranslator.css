@@ -19,33 +19,20 @@ html {
 
 #header #title {
     background: url(../img/header-title.png) no-repeat;
-    background-size: 230px;
+    background-size: 250px;
     float: left;
-    height: 60px;
+    height: 62px;
     margin: 11px 0 0 5px;
-    width: 230px;
+    width: 250px;
     display: block;
 }
 
 #header #logo {
-    width: 60px;
-    height: 60px;
-    background: url(../img/header-logo.gif) no-repeat top right;
-    background-size: 60px;
     position: relative;
     top: 10px;
     right: 15px;
     float: right;
     margin-bottom: 10px;
-}
-
-#header #logo #loader {
-    display: none;
-    width: 60px;
-    height: 60px;
-    position: relative;
-    background-image: url(../img/loader.gif);
-    background-size: 60px;
 }
 
 #content {
@@ -64,7 +51,6 @@ html {
     font-family: Ubuntu, sans-serif;
     font-size: 16px;
     font-weight: 500;
-    /* height: 86px; */
     letter-spacing: -1px;
     line-height: 18px;
     margin: 0 auto;
@@ -84,8 +70,8 @@ html {
     text-shadow: 0 1px rgba(255, 255, 255, 0.5);
     background: #DCD7CE;
     border-radius: 4px;
-    height: 100px !important;
-    max-height: 100px !important;
+    height: 90px;
+    max-height: 90px !important;
 }
 
 #translateText:focus {
@@ -147,15 +133,6 @@ html {
     background-image: url(../img/providers/logo_bing_on.png);
 }
 
-#providers .ui-btn #provider_systran {
-    background: transparent url(../img/providers/logo_systran.png) no-repeat center center;
-    background-size: 56px;
-}
-
-#providers .ui-btn.ui-btn-active #provider_systran {
-    background-image: url(../img/providers/logo_systran_on.png);
-}
-
 #providers .ui-btn #provider_transcloud {
     background: transparent url(../img/providers/logo_transcloud.png) no-repeat center center;
     background-size: 56px;
@@ -202,4 +179,47 @@ html {
     cursor: pointer;
 }
 
-#sitefooter { display: none; visibility: hidden; }
+.loader-wrapper {
+    position: relative;
+    background: url(../img/header-faces.png) no-repeat -18px -9px;
+    background-size: 80px;
+    width: 60px;
+    height: 60px;
+    margin-bottom: 18px !important;
+}
+
+.loader {
+    display: none;
+    position: relative;
+    border: 6px solid rgba(0,183,229,0.9);
+    border-top: 6px solid rgba(0,0,0,0);
+    border-left: 6px solid rgba(0,0,0,0);
+    border-radius: 106px;
+    box-shadow: 1px 1px 15px #2187e7;
+    width: 53px;
+    height: 53px;
+    right: 10px;
+    margin: 0 auto;
+    -moz-animation: spinoff .5s infinite linear;
+    -webkit-animation: spinoff .5s infinite linear;
+}
+
+@-moz-keyframes spin {
+    0% { -moz-transform:rotate(0deg); }
+    100% { -moz-transform:rotate(360deg); }
+}
+
+@-moz-keyframes spinoff {
+    0% { -moz-transform:rotate(0deg); }
+    100% { -moz-transform:rotate(-360deg); }
+}
+
+@-webkit-keyframes spin {
+    0% { -webkit-transform:rotate(0deg); }
+    100% { -webkit-transform:rotate(360deg); }
+}
+
+@-webkit-keyframes spinoff {
+    0% { -webkit-transform:rotate(0deg); }
+    100% { -webkit-transform:rotate(-360deg); }
+}

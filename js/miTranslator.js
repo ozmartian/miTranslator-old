@@ -2,8 +2,6 @@ var handleOpenURL = function(url) { setTimeout(function() { miTrans.translate(ur
 
 var miTrans = {
 
-    jqXHR: null,
-
     service: {
 
         baidu: {
@@ -26,16 +24,6 @@ var miTrans = {
             enabled: true
         },
 
-        systran: {
-            uri: 'http://www.systranet.com/sai?gui=text&service=urlmarkuptranslate',
-            query: '&lp={from}_{to}',
-            result: '',
-            datatype: 'text',
-            type: 'POST',
-            lang: { chinese: 'zh', english: 'en' },
-            enabled: true
-        },
-
         transcloud: {
             uri: 'http://translation-cloud.com/wp-content/themes/translationcloud/ajax/free_translator.php?text=',
             query: '&src={from}&dst={to}',
@@ -43,7 +31,7 @@ var miTrans = {
             datatype: 'text',
             type: 'GET',
             lang: { chinese: 'zh-CHS', english: 'en' },
-            enabled: false
+            enabled: true
         },
 
         youdao: {
@@ -87,30 +75,22 @@ var miTrans = {
         } else {
             miTrans.response = miTrans.data;
         }
-        $('#translatedText .iscroll-content').text(decodeURIComponent(miTrans.response));
+        $('#translatedText .iscroll-content').text(miTrans.response);
+
+        /* BEGIN: REVERSE TRANSLATION */
+        var reverseTrans = '<h3>Reverse Translation</h3>';
+        /*    END: REVERSE TRANSLATION */
+
         $('#translatedText').iscrollview('refresh');
         miTrans.loader(false);
         miTrans.setclip(miTrans.response);
     },
 
-    ajaxOptions:  function(uri, datatype, type, data){
-        return {
-            url: uri,
-            type: (type != null ? type : "GET"),
-            data: (data != null ? data : ""),
-            dataType: datatype,
-            cache: false,
-            async: true,
-            processData: (type == "POST" ? false : true),
-            jsonpCallback: 'miTrans.callback'
-        };
-    },
-
     translate: function(toTrans) {
-        miTrans.loader(true);
         if (toTrans && typeof(toTrans) == 'string' && toTrans.length > 0) { $('#translateText').val(unescape(toTrans)); }
         var text = $('#translateText').val();
         if (text.length > 0) {
+            miTrans.loader(true);
             if (miTrans.service[miTrans.provider].query.length > 0) {
                 if (miTrans.regex.test(text)) {
                     miTrans.from = miTrans.service[miTrans.provider].lang.chinese;
@@ -120,24 +100,29 @@ var miTrans = {
                     miTrans.to = miTrans.service[miTrans.provider].lang.chinese;
                 }
                 var qsVal = (miTrans.service[miTrans.provider].query).replace(/{from}/gi, miTrans.from).replace(/{to}/gi, miTrans.to);
-                if (miTrans.service[miTrans.provider].type === "POST") {
-                    var fullURI = miTrans.service[miTrans.provider].uri + qsVal;
-                } else {
-                    var fullURI = miTrans.service[miTrans.provider].uri + encodeURIComponent(text) + qsVal;
-                }
+                var fullURI = miTrans.service[miTrans.provider].uri + encodeURIComponent(text) + qsVal;
             } else {
                 var fullURI = miTrans.service[miTrans.provider].uri + encodeURIComponent(text);
             }
-            var data = (miTrans.service[miTrans.provider].type == "POST") ? encodeURIComponent(text) : "";
-            var options = miTrans.ajaxOptions(fullURI, miTrans.service[miTrans.provider].datatype, miTrans.service[miTrans.provider].type, data);
-            miTrans.jqXHR = $.ajax(options)
-                .done(function(data) { miTrans.callback(data); })
-                .fail(function(jqXHR, statusText, error) { miTrans.loader(false); });
+            var dataType = miTrans.service[miTrans.provider].datatype;
+            $.ajax({
+                url: fullURI,
+                dataType: dataType,
+                cache: false,
+                async: true,
+                jsonpCallback: 'miTrans.callback',
+                success: function(data) {
+                    miTrans.callback(data);
+                },
+                failure: function(ex) {
+                    miTrans.loader(false);
+                    console.error('translate() ERROR: ' + ex);
+                }
+            });
         }
         return false;
     },
-    
-    /* TODO: replace with Modernizr.load() */
+
     loadscript: function(script) {
         if ($("script[src$='" + script + "']").length == 0) {          
             var tag = document.createElement("script");
@@ -162,11 +147,12 @@ var miTrans = {
     },
 
     setprovider: function(e, p) {
-        //e.preventDefault();
+        e.preventDefault();
         if (p) {
-            miTrans.provider = p;
+            miTrans.provider = $(p).attr('rel');
             $('#provider_image_' + miTrans.provider).attr('src', 'img/providers/' + miTrans.provider + '.png');
         }
+        return false;
     },
 
     notify: function(msg, elem, autohide) {
@@ -190,10 +176,10 @@ var miTrans = {
     },
 
     events: function() {
-        var uriText = $.url(false).param('text');
+        /* var uriText = $.url(false).param('text');
         if (typeof(uriText) == 'string' && uriText.length > 0) {
             miTrans.translate(uriText);
-        }
+        } */
         $('#translateText')
             .on('blur', function(e) { $.mobile.silentScroll(0); })
             .on('change', function(e) { miTrans.translate(); })
@@ -208,8 +194,8 @@ var miTrans = {
             })
             .on('click', function(e) { miTrans.select(e, this); });
 
-        $('#navbar a.provider').on('touchstart click', function(e) {
-            miTrans.setprovider(e, $(this).attr('rel'));
+        $('#footer a.provider').on('touchstart', function(e) {
+            miTrans.setprovider(e, this);
             miTrans.translate();
         });
     },
@@ -217,12 +203,12 @@ var miTrans = {
     getclip: function() {
         //if (miTrans.isphonegap) {
         try {
-            cordova.exec(function(data){
+            window.plugins.paste(function(data) {
                 if ($.trim(data).length > 0) {
                     miTrans.clipdata = $.trim(data);
                     miTrans.translate(miTrans.clipdata);
                 }
-            }, function(){}, 'ClipboardPlugin', 'getText', []);
+            });
         } catch(ex) {}
         //}
     },
@@ -230,18 +216,16 @@ var miTrans = {
     setclip: function(data) {
         //if (miTrans.isphonegap) {
         try {
-            if (data && $.trim(data).length > 0) {
-                cordova.exec(function(){}, function(){}, 'ClipboardPlugin', 'setText', [data]);
+            if ($.trim(data).length > 0) {
+                window.plugins.copy(data);
             }
-        } catch(ex) {
-            console.log(ex);
-        }
+        } catch(ex) {}
         //}
     },
 
     loader: function(on)  {
-        if (on) { $('#header #logo #loader').fadeIn('fast'); }
-        else { $('#header #logo #loader').fadeOut('slow'); }
+        if (on) { $('.loader').fadeIn('fast'); }
+        else { $('.loader').fadeOut('slow'); }
     },
     
     defaults: function() {
@@ -256,7 +240,8 @@ var miTrans = {
         $('#page').fadeIn('slow');
         $('#translateText').width($('#content').width()+6);
         $('#content').height($('#content').height()-95);
-        setTimeout(function(){ miTrans.getclip(); }, 0);
+        setTimeout(function(){ miTrans.getclip(); }, 500);
+        //$('#sitefooter').remove();
     }
 
 };
